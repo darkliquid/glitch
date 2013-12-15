@@ -40,6 +40,7 @@ func random(min, max int) int {
 	offset := 0
 	input := max - min
 
+	// Intn hates 0 or less, so we use this workaround
 	if input <= 0 {
 		offset = 1 + input*-1
 		input = offset
