@@ -31,11 +31,13 @@ func usage() {
 	os.Exit(2)
 }
 
+// Just die with an error message
 func bail(message string) {
 	fmt.Fprintf(os.Stderr, message+"\n")
 	os.Exit(1)
 }
 
+// Spits out a random int between min and max
 func random(min, max int) int {
 	offset := 0
 	input := max - min
@@ -49,6 +51,7 @@ func random(min, max int) int {
 	return rand.Intn(input) + min - offset
 }
 
+// Generates a random int64 seed value from the seed string
 func randomseed() (seedInt int64) {
 	hasher := md5.New()
 	io.WriteString(hasher, seed)
@@ -115,6 +118,7 @@ func glitchify() {
 	}
 	defer writer.Close()
 
+	// Pass off image writing to appropriate encoder
 	switch filepath.Ext(outputImage) {
 	case ".jpg", ".jpeg":
 		err = jpeg.Encode(writer, outputData, &jpeg.Options{jpeg.DefaultQuality})
@@ -168,19 +172,15 @@ func main() {
 	case len(inputImage) == 0:
 		fmt.Fprintf(os.Stderr, "No input image specified\n")
 		usage()
-		os.Exit(2)
 	case len(outputImage) == 0:
 		fmt.Fprintf(os.Stderr, "No output image specified\n")
 		usage()
-		os.Exit(2)
 	case glitchFactor > 100.0 || glitchFactor < 0.0:
 		fmt.Fprintf(os.Stderr, "Glitch factor must be between 0 and 100\n")
 		usage()
-		os.Exit(2)
 	case brightnessFactor > 100.0 || brightnessFactor < 0.0:
 		fmt.Fprintf(os.Stderr, "Brightness factor must be between 0 and 100\n")
 		usage()
-		os.Exit(2)
 	}
 
 	// Seed the random number generator
