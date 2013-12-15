@@ -167,15 +167,19 @@ func main() {
 	case len(inputImage) == 0:
 		fmt.Fprintf(os.Stderr, "No input image specified\n")
 		usage()
+		os.Exit(2)
 	case len(outputImage) == 0:
 		fmt.Fprintf(os.Stderr, "No output image specified\n")
 		usage()
+		os.Exit(2)
 	case glitchFactor > 100.0 || glitchFactor < 0.0:
 		fmt.Fprintf(os.Stderr, "Glitch factor must be between 0 and 100\n")
 		usage()
+		os.Exit(2)
 	case brightnessFactor > 100.0 || brightnessFactor < 0.0:
 		fmt.Fprintf(os.Stderr, "Brightness factor must be between 0 and 100\n")
 		usage()
+		os.Exit(2)
 	}
 
 	// Seed the random number generator
