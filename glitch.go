@@ -161,8 +161,10 @@ func glitchify() {
 		}
 	}
 
+	// Copy a random channel from the pristene original input data onto the slice-offsetted output data
 	copy_channel(outputData, inputData, random_channel())
 
+	// Prep writing the output file
 	writer, err := os.Create(outputImage)
 	if err != nil {
 		bail("Couldn't create output file!")
