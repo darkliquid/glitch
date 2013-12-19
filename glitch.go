@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
+	"image/color"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
@@ -14,6 +15,16 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+)
+
+// Types and constants for Channel enums
+type Channel int
+
+const (
+	RED Channel = iota
+	GREEN
+	BLUE
+	ALPHA
 )
 
 // Global Vars
@@ -68,6 +79,40 @@ func randomseed() (seedInt int64) {
 	return
 }
 
+func random_channel() Channel {
+	r := rand.Float32()
+	if r < 0.33 {
+		return GREEN
+	} else if r < 0.66 {
+		return RED
+	}
+	return BLUE
+}
+
+func copy_channel(destImage *image.RGBA, sourceImage *image.RGBA, copyChannel Channel) {
+	bounds := sourceImage.Bounds()
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			// Note type assertion to get a color.RGBA
+			source_pixel := sourceImage.At(x, y).(color.RGBA)
+			dest_pixel := destImage.At(x, y).(color.RGBA)
+			
+			switch copyChannel {
+			case RED:
+				dest_pixel.R = source_pixel.R
+			case GREEN:
+				dest_pixel.G = source_pixel.G
+			case BLUE:
+				dest_pixel.B = source_pixel.B
+			case ALPHA:
+				dest_pixel.A = source_pixel.A
+			}
+
+			destImage.Set(x, y, dest_pixel)
+		}
+	}
+}
+
 // Actually does useful stuff
 func glitchify() {
 	reader, err := os.Open(inputImage)
@@ -76,7 +121,7 @@ func glitchify() {
 	}
 
 	// Decode the image data from the input file. Don't care about format registration
-	inputData, _, err := image.Decode(reader)
+	inputDecode, _, err := image.Decode(reader)
 	if err != nil {
 		bail("Couldn't decode image data!")
 	}
@@ -85,13 +130,17 @@ func glitchify() {
 	reader.Close()
 
 	// Useful values
-	bounds := inputData.Bounds()
+	bounds := inputDecode.Bounds()
 	width, height := bounds.Max.X, bounds.Max.Y
 	maxOffset := int(glitchFactor / 100.0 * float64(width))
 
+	// Initialise input as RGBA data
+	inputData := image.NewRGBA(bounds)
+	draw.Draw(inputData, bounds, inputDecode, bounds.Min, draw.Src)
+
 	// Initialise output as identical to input
 	outputData := image.NewRGBA(bounds)
-	draw.Draw(outputData, bounds, inputData, bounds.Min, draw.Src)
+	draw.Draw(outputData, bounds, inputDecode, bounds.Min, draw.Src)
 
 	// Random image slice offsetting
 	for i := 0.0; i < glitchFactor*2; i++ {
@@ -111,6 +160,8 @@ func glitchify() {
 			draw.Draw(outputData, image.Rect(width-offset, startY, offset, chunkHeight), inputData, image.Pt(0, startY), draw.Src)
 		}
 	}
+
+	copy_channel(outputData, inputData, random_channel())
 
 	writer, err := os.Create(outputImage)
 	if err != nil {
