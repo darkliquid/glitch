@@ -5,8 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"image"
-	"image/draw"
 	"image/color"
+	"image/draw"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
@@ -98,7 +98,7 @@ func copy_channel(destImage *image.RGBA, sourceImage *image.RGBA, copyChannel Ch
 			// Note type assertion to get a color.RGBA
 			source_pixel := sourceImage.At(x, y).(color.RGBA)
 			dest_pixel := destImage.At(x, y).(color.RGBA)
-			
+
 			switch copyChannel {
 			case RED:
 				dest_pixel.R = source_pixel.R
@@ -125,10 +125,10 @@ func apply_brightness(destImage *image.RGBA) {
 			// Note type assertion to get a color.RGBA
 			source_pixel := destImage.At(x, y).(color.RGBA)
 			dest_pixel := destImage.At(x, y).(color.RGBA)
-			
-			dest_pixel.R = uint8(math.Min(float64(source_pixel.R) * brightnessMultiplier, 255))
-			dest_pixel.G = uint8(math.Min(float64(source_pixel.G) * brightnessMultiplier, 255))
-			dest_pixel.B = uint8(math.Min(float64(source_pixel.B) * brightnessMultiplier, 255))
+
+			dest_pixel.R = uint8(math.Min(float64(source_pixel.R)*brightnessMultiplier, 255))
+			dest_pixel.G = uint8(math.Min(float64(source_pixel.G)*brightnessMultiplier, 255))
+			dest_pixel.B = uint8(math.Min(float64(source_pixel.B)*brightnessMultiplier, 255))
 
 			destImage.Set(x, y, dest_pixel)
 		}
@@ -138,7 +138,7 @@ func apply_brightness(destImage *image.RGBA) {
 // Applies scanlines
 func apply_scanlines(destImage *image.RGBA) {
 	bounds := destImage.Bounds()
-	for y := bounds.Min.Y; y < bounds.Max.Y; y = y+2 {
+	for y := bounds.Min.Y; y < bounds.Max.Y; y = y + 2 {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			destImage.Set(x, y, color.Black)
 		}
@@ -155,20 +155,20 @@ func wrap_slice(destImage *image.RGBA, sourceImage *image.RGBA, xShift int, yPos
 
 	// Wrap slice left
 	if xShift < 0 {
-		r := image.Rect(-xShift, yPos, width, yPos + height)
+		r := image.Rect(-xShift, yPos, width, yPos+height)
 		p := image.Pt(0, yPos)
 		draw.Draw(destImage, r, sourceImage, p, draw.Src)
 
-		r = image.Rect(0, yPos, -xShift, yPos + height)
+		r = image.Rect(0, yPos, -xShift, yPos+height)
 		p = image.Pt(width+xShift, yPos)
 		draw.Draw(destImage, r, sourceImage, p, draw.Src)
-	// Wrap slice right
+		// Wrap slice right
 	} else {
-		r := image.Rect(0, yPos, width, yPos + height)
+		r := image.Rect(0, yPos, width, yPos+height)
 		p := image.Pt(xShift, yPos)
 		draw.Draw(destImage, r, sourceImage, p, draw.Src)
 
-		r = image.Rect(width-xShift, yPos, width, yPos + height)
+		r = image.Rect(width-xShift, yPos, width, yPos+height)
 		p = image.Pt(0, yPos)
 		draw.Draw(destImage, r, sourceImage, p, draw.Src)
 	}
