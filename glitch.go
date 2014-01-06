@@ -79,6 +79,7 @@ func randomseed() (seedInt int64) {
 	return
 }
 
+// Pick a random colour channel (excludes ALPHA, since that's usually boring)
 func random_channel() Channel {
 	r := rand.Float32()
 	if r < 0.33 {
@@ -89,6 +90,7 @@ func random_channel() Channel {
 	return BLUE
 }
 
+// Copy the channel data for one channel of an image onto the same channel of another image
 func copy_channel(destImage *image.RGBA, sourceImage *image.RGBA, copyChannel Channel) {
 	bounds := sourceImage.Bounds()
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
@@ -113,6 +115,37 @@ func copy_channel(destImage *image.RGBA, sourceImage *image.RGBA, copyChannel Ch
 	}
 }
 
+// Increase brightness of image by brightness factor
+func apply_brightness(destImage *image.RGBA) {
+	bounds := destImage.Bounds()
+	brightnessMultiplier := 1 + (brightnessFactor / 100)
+
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			// Note type assertion to get a color.RGBA
+			source_pixel := destImage.At(x, y).(color.RGBA)
+			dest_pixel := destImage.At(x, y).(color.RGBA)
+			
+			dest_pixel.R = uint8(float64(source_pixel.R) * brightnessMultiplier)
+			dest_pixel.G = uint8(float64(source_pixel.G) * brightnessMultiplier)
+			dest_pixel.B = uint8(float64(source_pixel.B) * brightnessMultiplier)
+
+			destImage.Set(x, y, dest_pixel)
+		}
+	}
+}
+
+// Applies scanlines
+func apply_scanlines(destImage *image.RGBA) {
+	bounds := destImage.Bounds()
+	for y := bounds.Min.Y; y < bounds.Max.Y; y = y+2 {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			destImage.Set(x, y, color.Black)
+		}
+	}
+}
+
+// Wrap a slice of the image horizontally either left or right
 func wrap_slice(destImage *image.RGBA, sourceImage *image.RGBA, xShift int, yPos int, height int) {
 	if xShift == 0 {
 		return
@@ -181,6 +214,14 @@ func glitchify() {
 
 	// Copy a random channel from the pristene original input data onto the slice-offsetted output data
 	copy_channel(outputData, inputData, random_channel())
+
+	// Do brightness filter
+	apply_brightness(outputData)
+
+	// Apply scanlines
+	if useScanLines {
+		apply_scanlines(outputData)
+	}
 
 	// Prep writing the output file
 	writer, err := os.Create(outputImage)
