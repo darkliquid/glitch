@@ -126,9 +126,9 @@ func apply_brightness(destImage *image.RGBA) {
 			source_pixel := destImage.At(x, y).(color.RGBA)
 			dest_pixel := destImage.At(x, y).(color.RGBA)
 			
-			dest_pixel.R = uint8(float64(source_pixel.R) * brightnessMultiplier)
-			dest_pixel.G = uint8(float64(source_pixel.G) * brightnessMultiplier)
-			dest_pixel.B = uint8(float64(source_pixel.B) * brightnessMultiplier)
+			dest_pixel.R = uint8(math.Min(float64(source_pixel.R) * brightnessMultiplier, 255))
+			dest_pixel.G = uint8(math.Min(float64(source_pixel.G) * brightnessMultiplier, 255))
+			dest_pixel.B = uint8(math.Min(float64(source_pixel.B) * brightnessMultiplier, 255))
 
 			destImage.Set(x, y, dest_pixel)
 		}
