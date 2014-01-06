@@ -113,6 +113,34 @@ func copy_channel(destImage *image.RGBA, sourceImage *image.RGBA, copyChannel Ch
 	}
 }
 
+func wrap_slice(destImage *image.RGBA, sourceImage *image.RGBA, xShift int, yPos int, height int) {
+	if xShift == 0 {
+		return
+	}
+
+	width := sourceImage.Bounds().Max.X
+
+	// Wrap slice left
+	if xShift < 0 {
+		r := image.Rect(-xShift, yPos, width, yPos + height)
+		p := image.Pt(0, yPos)
+		draw.Draw(destImage, r, sourceImage, p, draw.Src)
+
+		r = image.Rect(0, yPos, -xShift, yPos + height)
+		p = image.Pt(width+xShift, yPos)
+		draw.Draw(destImage, r, sourceImage, p, draw.Src)
+	// Wrap slice right
+	} else {
+		r := image.Rect(0, yPos, width, yPos + height)
+		p := image.Pt(xShift, yPos)
+		draw.Draw(destImage, r, sourceImage, p, draw.Src)
+
+		r = image.Rect(width-xShift, yPos, width, yPos + height)
+		p = image.Pt(0, yPos)
+		draw.Draw(destImage, r, sourceImage, p, draw.Src)
+	}
+}
+
 // Actually does useful stuff
 func glitchify() {
 	reader, err := os.Open(inputImage)
@@ -148,17 +176,7 @@ func glitchify() {
 		chunkHeight := int(math.Min(float64(height-startY), float64(random(1, height/4))))
 		offset := random(-maxOffset, maxOffset)
 
-		if offset == 0 {
-			continue
-		}
-
-		if offset < 0 {
-			draw.Draw(outputData, image.Rect(-offset, startY, width+offset, chunkHeight), inputData, image.Pt(0, startY), draw.Src)
-			draw.Draw(outputData, image.Rect(0, startY, -offset, chunkHeight), inputData, image.Pt(width+offset, startY), draw.Src)
-		} else {
-			draw.Draw(outputData, image.Rect(0, startY, width, chunkHeight), inputData, image.Pt(offset, startY), draw.Src)
-			draw.Draw(outputData, image.Rect(width-offset, startY, offset, chunkHeight), inputData, image.Pt(0, startY), draw.Src)
-		}
+		wrap_slice(outputData, inputData, offset, startY, chunkHeight)
 	}
 
 	// Copy a random channel from the pristene original input data onto the slice-offsetted output data
