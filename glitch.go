@@ -37,14 +37,14 @@ var outputImage string
 
 // Custom usage info func for flags package
 func usage() {
-	fmt.Fprintf(os.Stderr, "Usage: glitch [-gbls] input_image output_image\n")
+	fmt.Fprintln(os.Stderr, "Usage: glitch [-gbls] input_image output_image")
 	flag.PrintDefaults()
 	os.Exit(2)
 }
 
 // Just die with an error message
 func bail(message string) {
-	fmt.Fprintf(os.Stderr, message+"\n")
+	fmt.Fprintln(os.Stderr, message)
 	os.Exit(1)
 }
 
@@ -282,16 +282,16 @@ func main() {
 	// Sanitise input
 	switch {
 	case len(inputImage) == 0:
-		fmt.Fprintf(os.Stderr, "No input image specified\n")
+		fmt.Fprintln(os.Stderr, "No input image specified")
 		usage()
 	case len(outputImage) == 0:
-		fmt.Fprintf(os.Stderr, "No output image specified\n")
+		fmt.Fprintln(os.Stderr, "No output image specified")
 		usage()
 	case glitchFactor > 100.0 || glitchFactor < 0.0:
-		fmt.Fprintf(os.Stderr, "Glitch factor must be between 0 and 100\n")
+		fmt.Fprintln(os.Stderr, "Glitch factor must be between 0 and 100")
 		usage()
 	case brightnessFactor > 100.0 || brightnessFactor < 0.0:
-		fmt.Fprintf(os.Stderr, "Brightness factor must be between 0 and 100\n")
+		fmt.Fprintln(os.Stderr, "Brightness factor must be between 0 and 100")
 		usage()
 	}
 
