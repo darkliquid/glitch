@@ -7,7 +7,7 @@ Initially this is a more-or-less direct port of http://www.airtightinteractive.c
 
 All the original javascript algorithms on which the initial build of this project is based were created by Felix Turner.
 
-    Usage: glitch [-gbls] input_image output_image
+    Usage: glitch [-gblsf] input_image output_image
       -b=5: Defines how much brightening to do (0-100) - shorthand syntax
       -brightness=5: Defines how much brightening to do (0-100)
       -f=0: Number of frames (only valid for gif output) - shorthand syntax
