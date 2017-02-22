@@ -10,6 +10,8 @@ All the original javascript algorithms on which the initial build of this projec
     Usage: glitch [-gbls] input_image output_image
       -b=5: Defines how much brightening to do (0-100) - shorthand syntax
       -brightness=5: Defines how much brightening to do (0-100)
+      -f=0: Number of frames (only valid for gif output) - shorthand syntax
+      -frames=0: Number of frames (only valid for gif output)
       -g=5: Defines how much glitching to do (0-100) - shorthand syntax
       -glitch=5: Defines how much glitching to do (0-100)
       -l=true: Apply the scan line filter - shorthand syntax
