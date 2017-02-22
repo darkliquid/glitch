@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"image"
+	"image/color/palette"
+	"image/draw"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
@@ -54,6 +56,7 @@ func main() {
 	var useScanLines bool
 	var inputImage string
 	var outputImage string
+	var frames int
 
 	// Setup usage info
 	flag.Usage = usage
@@ -80,6 +83,10 @@ func main() {
 	flag.StringVar(&seed, "seed", hostname, "Seed for the randomiser")
 	flag.StringVar(&seed, "s", hostname, "Seed for the randomiser - shorthand syntax")
 
+	// Frames
+	flag.IntVar(&frames, "frames", 0, "Number of frames (only valid for gif output)")
+	flag.IntVar(&frames, "f", 0, "Number of frames (only valid for gif output) - shorthand syntax")
+
 	flag.Parse()
 
 	inputImage = flag.Arg(0)
@@ -98,6 +105,9 @@ func main() {
 		usage()
 	case brightnessFactor > 100.0 || brightnessFactor < 0.0:
 		fmt.Fprintln(os.Stderr, "Brightness factor must be between 0 and 100")
+		usage()
+	case frames > 1 && filepath.Ext(outputImage) != ".gif":
+		fmt.Fprintln(os.Stderr, "Frames > 1 is only valid for gifs")
 		usage()
 	}
 
@@ -124,16 +134,46 @@ func main() {
 	}
 
 	outputImg := glitch.Glitchify(inputImg, glitchFactor, brightnessFactor, useScanLines)
-	if err != nil {
-		bail("Couldn't glitch image!")
-	}
 
 	// Pass off image writing to appropriate encoder
 	switch filepath.Ext(outputImage) {
 	case ".jpg", ".jpeg":
 		err = jpeg.Encode(writer, outputImg, &jpeg.Options{Quality: jpeg.DefaultQuality})
 	case ".gif":
-		err = gif.Encode(writer, outputImg, &gif.Options{NumColors: 256, Drawer: nil, Quantizer: nil})
+		if frames > 1 {
+			outGif := &gif.GIF{}
+			bounds := inputImg.Bounds()
+
+			palettedImage := image.NewPaletted(bounds, palette.Plan9[:256])
+			draw.FloydSteinberg.Draw(palettedImage, bounds, inputImg, image.ZP)
+
+			// Add new frame to animated GIF
+			outGif.Image = append(outGif.Image, palettedImage)
+			outGif.Delay = append(outGif.Delay, 0)
+
+			frames--
+
+			for {
+				// We need paletted images for gifs, so convert
+				palettedImage = image.NewPaletted(bounds, palette.Plan9[:256])
+				draw.FloydSteinberg.Draw(palettedImage, bounds, outputImg, image.ZP)
+
+				// Add new frame to animated GIF
+				outGif.Image = append(outGif.Image, palettedImage)
+				outGif.Delay = append(outGif.Delay, 0)
+
+				frames--
+
+				if frames == 0 {
+					break
+				}
+
+				outputImg = glitch.Glitchify(inputImg, glitchFactor, brightnessFactor, useScanLines)
+			}
+			err = gif.EncodeAll(writer, outGif)
+		} else {
+			err = gif.Encode(writer, outputImg, &gif.Options{NumColors: 256})
+		}
 	case ".png":
 		err = png.Encode(writer, outputImg)
 	default:
