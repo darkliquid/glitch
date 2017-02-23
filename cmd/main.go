@@ -57,6 +57,7 @@ func main() {
 	var inputImage string
 	var outputImage string
 	var frames int
+	var debug bool
 
 	// Setup usage info
 	flag.Usage = usage
@@ -87,6 +88,9 @@ func main() {
 	flag.IntVar(&frames, "frames", 0, "Number of frames (only valid for gif output)")
 	flag.IntVar(&frames, "f", 0, "Number of frames (only valid for gif output) - shorthand syntax")
 
+	// Debug
+	flag.BoolVar(&debug, "debug", false, "Enable debug info")
+
 	flag.Parse()
 
 	inputImage = flag.Arg(0)
@@ -110,6 +114,8 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Frames > 1 is only valid for gifs")
 		usage()
 	}
+
+	glitch.Debug = debug
 
 	// Seed the random number generator
 	rand.Seed(randomseed(seed))
